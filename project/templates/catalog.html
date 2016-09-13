@@ -1,0 +1,23 @@
+{% extends "main.html" %}
+{% block content %}
+
+{% include "header.html" %}
+
+	<div class="row jumbotron" style="height: 65vh" >
+		<div class="col-sm-4" style="border-right: 0.2em solid orangered  ">
+            <h2>Catalog</h2>
+            {% for each in catalog %}
+            <li>
+            <ul>{{each.name}}</ul>
+            </li>
+            {% endfor %}
+
+		</div>
+		<div class="col-sm-8">
+            <h2>Recent Items</h2>
+            <p>List all the recent items</p>
+		</div>
+	</div>
+
+{% include "footer.html" %}
+    {% endblock %}
