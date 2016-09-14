@@ -3,19 +3,28 @@
 
 {% include "header.html" %}
 
-	<div class="row jumbotron" style="height: 65vh" >
-		<div class="col-sm-4" style="border-right: 0.2em solid orangered  ">
+	<div class="row jumbotron" style="height: 65vh ;overflow: scroll" >
+		<div class="col-sm-4" style="border-right: 0.2em solid orangered; height: inherit ">
             <h2>Catalog</h2>
             {% for each in catalog %}
-            <li>
-            <ul>{{each.name}}</ul>
-            </li>
+            <a href="{{url_for('showItems',catalog_id=each.id)}}"><li>
+             <ul>{{each.name}}</ul>
+            </li></a>
             {% endfor %}
 
 		</div>
 		<div class="col-sm-8">
+            <a href="{{ url_for('newCatalogItem') }}"><h2 style="font-family:'Snap ITC'; font-size: 1.5em; color: darkblue "> Add New Item .... </h2></a>
             <h2>Recent Items</h2>
-            <p>List all the recent items</p>
+
+            {% for each in items %}
+            <a href="{{url_for('showItem',catalog_id=each.category_id, item_id=each.id)}}">
+            <li >  <ul>
+                {{each.name}}--{{each.category_id}}--{{each.category.name}}<em class="pull-right">{{each.time_modified}}</em></ul>
+            </li>
+                </a>
+            {% endfor %}
+
 		</div>
 	</div>
 

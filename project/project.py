@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
-from sqlalchemy import create_engine, asc
+from sqlalchemy import create_engine, asc, desc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, Item, User
 from flask import session as login_session
@@ -38,36 +38,84 @@ def showLogin():
     # return "The current session state is %s" % login_session['state']
     return render_template('login.html', STATE=state)
 
-# Show all restaurants
 @app.route('/')
 @app.route('/catalog')
 def showCatalog():
     catalog=session.query(Category).order_by(asc(Category.name)).all()
-    return render_template('catalog.html', catalog=catalog)
+    items=session.query(Item).order_by(Item.time_modified.desc()).all()
+    return render_template('catalog.html', catalog=catalog,items=items)
 
-
-# Create a new
 
 @app.route('/catalog/<int:catalog_id>')
 @app.route('/catalog/<int:catalog_id>/items/')
 def showItems(catalog_id):
-    return "ShowItems"
+    catalog=session.query(Category).order_by(asc(Category.name)).all()
+    items=session.query(Item).filter_by(category_id = catalog_id).all()
+    return render_template('catalog.html', catalog=catalog,items=items)
 
-# Create a new menu item
+
+@app.route('/catalog/<int:catalog_id>/item/<int:item_id>')
+def showItem(catalog_id,item_id):
+    #session.rollback()
+    item=session.query(Item).filter_by(id=item_id).one()
+    print "@@@@@@@@@@@"
+    print item.name
+    print item.description
+    return render_template('item.html', item=item)
+
+
 @app.route('/catalog/newItem', methods=['GET', 'POST'])
 def newCatalogItem():
-        return "NewCatalogItem"
+    if request.method == 'POST':
+        newItem = Item(
+            name=request.form['name'],
+            price=request.form['price'],
+        description = request.form['description'],
+        category = session.query(Category).filter_by(name=request.form['category']).one(),
+        user_id = 121212
+        )
+        session.add(newItem)
+        #flash('New Restaurant %s Successfully Created' % newRestaurant.name)
+        session.commit()
+        print "-------------"
+        print newItem.category.name
+        return redirect(url_for('showCatalog'))
+    else:
+        catalog = session.query(Category).all()
+        return render_template('addItem.html',category=catalog)
 
-# Edit a menu item
+@app.route('/catalog/edit/<int:item_id>', methods=['GET','POST'])
+def editItem(item_id):
+    if request.method == 'POST':
+        print "Inside EditItem PoST"
+        item = session.query(Item).filter_by(id=(request.form['item_id'])).one()
+        item.name=request.form['name']
+        item.price=request.form['price']
+        item.description=request.form['description']
+        item.category = session.query(Category).filter_by(name=request.form['category']).one()
+        item.user_id=121212
+        session.add(item)
+        # flash('New Restaurant %s Successfully Created' % newRestaurant.name)
+        session.commit()
+        return redirect(url_for('showCatalog'))
+    else:
+        catalog = session.query(Category).all()
+        item=session.query(Item).filter_by(id=item_id).one()
+        return render_template('editItem.html', item=item,category=catalog)
 
-@app.route('/catalog/edit/<int:catalog_id>', methods=['GET', 'POST'])
-def editItem(catalog_id):
-    return "EditItem"
+@app.route('/catalog/delete/<int:item_id>', methods=['GET', 'POST'])
+def deleteItem(item_id):
+    if request.method=='POST':
+        print "Inside deleetItem POST"
+        item = session.query(Item).filter_by(id=request.form['item_id']).one()
+        session.delete(item)
+        session.commit()
+        return redirect(url_for('showCatalog'))
+    else:
+        item = session.query(Item).filter_by(id=item_id).one()
+        return render_template('deleteItem.html', item=item)
 
-# Delete a menu item
-@app.route('/catalog/delete/<int:catalog_id>', methods=['GET', 'POST'])
-def deleteItem(catalog_id):
-    return "deleteItem"
+
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():

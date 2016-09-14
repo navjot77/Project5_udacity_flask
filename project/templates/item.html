@@ -1,10 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "main.html" %}
+{% block content %}
 
-</body>
-</html>
+{% include "header.html" %}
+
+<div class="row banner menu">
+		<div class="col-md-11 col-md-offset-1 padding-none">
+			<h1> Displaying Item </h1>
+		</div>
+	</div>
+	<div class="row" >
+					<h2>{{ item.name }} <em>({{ item.category.name }})</em></h2>
+                    <blockquote style="overflow-y: scroll;height: 28vh">{{ item.description }}</blockquote>
+					<label>${{ item.price }}</label>
+
+                    <br>
+                    <h2>
+                        <label class="label label-lg label-warning"><a href="{{ url_for('editItem',item_id=item.id) }}">EDIT</a></label>
+
+                    <label class="label label-danger"><a href="{{ url_for('deleteItem',item_id=item.id) }}">DELETE</a></label>
+                    </h2>
+					</div>
+
+
+
+{% include "footer.html" %}
+    {% endblock %}
