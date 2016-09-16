@@ -49,9 +49,14 @@ def showCatalog():
 @app.route('/catalog/<int:catalog_id>')
 @app.route('/catalog/<int:catalog_id>/items/')
 def showItems(catalog_id):
-    catalog=session.query(Category).order_by(asc(Category.name)).all()
-    items=session.query(Item).filter_by(category_id = catalog_id).all()
-    return render_template('catalog.html', catalog=catalog,items=items)
+    if 'username' in login_session:
+        catalog=session.query(Category).order_by(asc(Category.name)).all()
+        items=session.query(Item).filter_by(category_id = catalog_id).all()
+        return render_template('catalog.html', catalog=catalog,items=items,no_show=True)
+    else:
+        flash("Kindly LogIn to access the items.")
+        return redirect(url_for('showCatalog'))
+
 
 
 @app.route('/catalog/<int:catalog_id>/item/<int:item_id>')
@@ -119,8 +124,6 @@ def deleteItem(item_id):
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
-    print "-----------1"
-    print CLIENT_ID
     # Validate state token
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
@@ -132,7 +135,6 @@ def gconnect():
     try:
         # Upgrade the authorization code into a credentials object
         oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
-        print "ok -----------2 %s"%oauth_flow
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
@@ -150,7 +152,6 @@ def gconnect():
     result = json.loads(h.request(url, 'GET')[1])
     # If there was an error in the access token info, abort.
     if result.get('error') is not None:
-        print "-----------------------4"
         response = make_response(json.dumps(result.get('error')), 500)
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -260,13 +261,14 @@ def gdisconnect():
         del login_session['username']
         del login_session['email']
         del login_session['picture']
+      #  del login_session['credentials']
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
 
         response = make_response(json.dumps('Failed to revoke token for given user.', 400))
-        response.headers['Content-Type'] = 'application/json'
+        response.headers['Content   -Type'] = 'application/json'
         return response
 
 @app.route('/fbconnect', methods=['POST'])
@@ -351,8 +353,8 @@ def disconnect():
     if 'provider' in login_session:
         if login_session['provider'] == 'google':
             gdisconnect()
-            del login_session['gplus_id']
-            del login_session['credentials']
+            #del login_session['gplus_id']
+            #del login_session['credentials']
         if login_session['provider'] == 'facebook':
             fbdisconnect()
             del login_session['facebook_id']
@@ -362,10 +364,10 @@ def disconnect():
         del login_session['user_id']
         del login_session['provider']
         flash("You have successfully been logged out.")
-        return redirect(url_for('showRestaurants'))
+        return redirect(url_for('showCatalog'))
     else:
         flash("You were not logged in")
-        return redirect(url_for('showRestaurants'))
+        return redirect(url_for('showCatalog'))
 
 
 if __name__ == '__main__':

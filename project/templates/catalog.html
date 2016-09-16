@@ -2,6 +2,16 @@
 {% block content %}
 
 {% include "header.html" %}
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+
+{% endwith %}
 
 	<div class="row jumbotron" style="height: 65vh ;overflow: scroll" >
 		<div class="col-sm-4" style="border-right: 0.2em solid orangered; height: inherit ">
@@ -15,8 +25,9 @@
 		</div>
 		<div class="col-sm-8">
             <a href="{{ url_for('newCatalogItem') }}"><h2 style="font-family:'Snap ITC'; font-size: 1.5em; color: darkblue "> Add New Item .... </h2></a>
+            {% if not no_show %}
             <h2>Recent Items</h2>
-
+            {% endif %}
             {% for each in items %}
             <a href="{{url_for('showItem',catalog_id=each.category_id, item_id=each.id)}}">
             <li >  <ul>
