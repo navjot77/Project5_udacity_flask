@@ -24,14 +24,16 @@
 
 		</div>
 		<div class="col-sm-8">
+            {%if 'username' in session %}
             <a href="{{ url_for('newCatalogItem') }}"><h2 style="font-family:'Snap ITC'; font-size: 1.5em; color: darkblue "> Add New Item .... </h2></a>
+            {% endif %}
             {% if not no_show %}
             <h2>Recent Items</h2>
             {% endif %}
             {% for each in items %}
             <a href="{{url_for('showItem',catalog_id=each.category_id, item_id=each.id)}}">
             <li >  <ul>
-                {{each.name}}--{{each.category_id}}--{{each.category.name}}<em class="pull-right">{{each.time_modified}}</em></ul>
+                {{each.name}}--{{each.category_id}}--{{each.category.name}}--by {{each.user.name}}<em class="pull-right">{{each.time_modified}}</em></ul>
             </li>
                 </a>
             {% endfor %}

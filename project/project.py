@@ -62,6 +62,10 @@ def showItems(catalog_id):
 @app.route('/catalog/<int:catalog_id>/item/<int:item_id>')
 def showItem(catalog_id,item_id):
     #session.rollback()
+    if 'username' not in login_session:
+        flash("Kindly LogIn to access the items.")
+        return redirect(url_for('showCatalog'))
+
     item=session.query(Item).filter_by(id=item_id).one()
     print "@@@@@@@@@@@"
     print item.name
@@ -71,13 +75,17 @@ def showItem(catalog_id,item_id):
 
 @app.route('/catalog/newItem', methods=['GET', 'POST'])
 def newCatalogItem():
+    if 'username' not in login_session:
+        flash("Kindly LogIn to access the items.")
+        return redirect(url_for('showCatalog'))
+
     if request.method == 'POST':
         newItem = Item(
             name=request.form['name'],
             price=request.form['price'],
         description = request.form['description'],
         category = session.query(Category).filter_by(name=request.form['category']).one(),
-        user_id = 121212
+        user_id = login_session['user_id']
         )
         session.add(newItem)
         #flash('New Restaurant %s Successfully Created' % newRestaurant.name)
@@ -91,6 +99,10 @@ def newCatalogItem():
 
 @app.route('/catalog/edit/<int:item_id>', methods=['GET','POST'])
 def editItem(item_id):
+    if 'username' not in login_session:
+        flash("Kindly LogIn to access the items.")
+        return redirect(url_for('showCatalog'))
+
     if request.method == 'POST':
         print "Inside EditItem PoST"
         item = session.query(Item).filter_by(id=(request.form['item_id'])).one()
@@ -98,7 +110,7 @@ def editItem(item_id):
         item.price=request.form['price']
         item.description=request.form['description']
         item.category = session.query(Category).filter_by(name=request.form['category']).one()
-        item.user_id=121212
+        item.user_id=login_session['user_id']
         session.add(item)
         # flash('New Restaurant %s Successfully Created' % newRestaurant.name)
         session.commit()
@@ -110,6 +122,10 @@ def editItem(item_id):
 
 @app.route('/catalog/delete/<int:item_id>', methods=['GET', 'POST'])
 def deleteItem(item_id):
+    if 'username' not in login_session:
+        flash("Kindly LogIn to access the items.")
+        return redirect(url_for('showCatalog'))
+
     if request.method=='POST':
         print "Inside deleetItem POST"
         item = session.query(Item).filter_by(id=request.form['item_id']).one()
@@ -243,8 +259,7 @@ def getUserID(email):
 def gdisconnect():
     access_token = login_session['access_token']
     print  'In gdisconnect access token is %s', access_token
-    print  'User name is: '
-    print   login_session['username']
+
     if access_token is None:
         print         'Access Token is None'
         response = make_response(json.dumps('Current user not connected.'), 401)
@@ -255,12 +270,15 @@ def gdisconnect():
     result = h.request(url, 'GET')[0]
     print     'result is '
     print     result
-    if result['status'] == '200':
+    if result:
         del login_session['access_token']
         del login_session['gplus_id']
-        del login_session['username']
+        if 'username' in login_session:
+            del login_session['username']
         del login_session['email']
         del login_session['picture']
+        if 'user_id' in login_session:
+            del login_session['user_id']
       #  del login_session['credentials']
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
@@ -344,6 +362,13 @@ def fbdisconnect():
         url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id, access_token)
         h = httplib2.Http()
         result = h.request(url, 'DELETE')[1]
+        del login_session['facebook_id']
+        del login_session['user_id']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        del login_session['access_token']
+
         return "you have been logged out"
 
 
@@ -357,15 +382,15 @@ def disconnect():
             #del login_session['credentials']
         if login_session['provider'] == 'facebook':
             fbdisconnect()
-            del login_session['facebook_id']
-        del login_session['username']
-        del login_session['email']
-        del login_session['picture']
-        del login_session['user_id']
+        #del login_session['username']
+
+
+       # del login_session['user_id']
         del login_session['provider']
         flash("You have successfully been logged out.")
         return redirect(url_for('showCatalog'))
     else:
+
         flash("You were not logged in")
         return redirect(url_for('showCatalog'))
 
