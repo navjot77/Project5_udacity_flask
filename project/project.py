@@ -45,6 +45,21 @@ def showCatalog():
     items=session.query(Item).order_by(Item.time_modified.desc()).all()
     return render_template('catalog.html', catalog=catalog,items=items)
 
+@app.route('/catalog/category/json')
+def categoryJSON():
+    catalog = session.query(Category).order_by(asc(Category.name)).all()
+    return jsonify(Category=[r.serialize for r in catalog])
+
+@app.route('/catalog/users/json')
+def usersJSON():
+    catalog = session.query(User).order_by(asc(User.name)).all()
+    return jsonify(Users=[r.serialize for r in catalog])
+
+@app.route('/catalog/category/<int:catalog_id>/items/json')
+def itemsJSON(catalog_id):
+    items = session.query(Item).filter_by(category_id=catalog_id).all()
+    return jsonify(Category=[r.serialize for r in items])
+
 
 @app.route('/catalog/<int:catalog_id>')
 @app.route('/catalog/<int:catalog_id>/items/')
@@ -363,8 +378,10 @@ def fbdisconnect():
         h = httplib2.Http()
         result = h.request(url, 'DELETE')[1]
         del login_session['facebook_id']
-        del login_session['user_id']
-        del login_session['username']
+        if 'user_id' in login_session:
+            del login_session['user_id']
+        if 'username' in login_session:
+            del login_session['username']
         del login_session['email']
         del login_session['picture']
         del login_session['access_token']
@@ -382,10 +399,7 @@ def disconnect():
             #del login_session['credentials']
         if login_session['provider'] == 'facebook':
             fbdisconnect()
-        #del login_session['username']
 
-
-       # del login_session['user_id']
         del login_session['provider']
         flash("You have successfully been logged out.")
         return redirect(url_for('showCatalog'))
