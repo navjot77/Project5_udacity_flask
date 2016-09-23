@@ -18,7 +18,7 @@ app = Flask(__name__)
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
-APPLICATION_NAME = "Restaurant Menu Application"
+APPLICATION_NAME = "Item Menu Application"
 
 # Connect to Database and create database session
 engine = create_engine('sqlite:///itemCatalog.db')
@@ -35,13 +35,15 @@ def showLogin():
     for x in xrange(32):
         state = state + (random.choice(string.digits + string.letters))
     login_session['state'] = state
-    # return "The current session state is %s" % login_session['state']
     return render_template('login.html', STATE=state)
 
 @app.route('/')
 @app.route('/catalog')
 def showCatalog():
     catalog=session.query(Category).order_by(asc(Category.name)).all()
+    for each in catalog:
+        print        each.name
+    print     "--v-v-v-v-v-v-v--v-v-v-v-v------v-v-v----"
     items=session.query(Item).order_by(Item.time_modified.desc()).all()
     return render_template('catalog.html', catalog=catalog,items=items)
 
@@ -66,6 +68,7 @@ def itemsJSON(catalog_id):
 def showItems(catalog_id):
     if 'username' in login_session:
         catalog=session.query(Category).order_by(asc(Category.name)).all()
+
         items=session.query(Item).filter_by(category_id = catalog_id).all()
         return render_template('catalog.html', catalog=catalog,items=items,no_show=True)
     else:
@@ -100,6 +103,7 @@ def newCatalogItem():
             price=request.form['price'],
         description = request.form['description'],
         category = session.query(Category).filter_by(name=request.form['category']).one(),
+        #user = session.query(User).filter_by(name=request.form['category']).one(),
         user_id = login_session['user_id']
         )
         session.add(newItem)
@@ -228,11 +232,13 @@ def gconnect():
     login_session['email'] = data['email']
 
     user_id=getUserID(login_session['email'])
+    print "Got user id is%s"%user_id
     if not user_id:
+        print "making user id"
         user_id=createUser(login_session)
     login_session['user_id']=user_id
     login_session['provider'] = 'google'
-
+    print login_session['user_id']
 
     output = ''
     output += '<h1>Welcome, '
@@ -311,8 +317,7 @@ def fbconnect():
             response.headers['Content-Type'] = 'application/json'
             return response
         access_token = request.data
-        print
-        "access token received %s " % access_token
+        print        "access token received %s " % access_token
 
         app_id = json.loads(open('fbClientSecrets.json', 'r').read())[
             'web']['app_id']

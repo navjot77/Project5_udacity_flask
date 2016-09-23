@@ -33,7 +33,7 @@
             {% for each in items %}
             <a href="{{url_for('showItem',catalog_id=each.category_id, item_id=each.id)}}">
             <li >  <ul>
-                {{each.name}}--{{each.category_id}}--{{each.category.name}}--by {{each.user.name}}<em class="pull-right">{{each.time_modified}}</em></ul>
+                {{each.name}} ({{each.category.name}})---Added by-{{each.user.name}}<em class="pull-right">{{each.time_modified}}</em></ul>
             </li>
                 </a>
             {% endfor %}
