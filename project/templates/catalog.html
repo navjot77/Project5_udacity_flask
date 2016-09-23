@@ -1,3 +1,5 @@
+<!-- This page gets rendered when user asks for main page by visiting the
+root address -->
 {% extends "main.html" %}
 {% block content %}
 
@@ -23,23 +25,34 @@
             {% endfor %}
 
 		</div>
-		<div class="col-sm-8">
-            {%if 'username' in session %}
-            <a href="{{ url_for('newCatalogItem') }}"><h2 style="font-family:'Snap ITC'; font-size: 1.5em; color: darkblue "> Add New Item .... </h2></a>
-            {% endif %}
-            {% if not no_show %}
-            <h2>Recent Items</h2>
-            {% endif %}
-            {% for each in items %}
-            <a href="{{url_for('showItem',catalog_id=each.category_id, item_id=each.id)}}">
-            <li >  <ul>
-                {{each.name}} ({{each.category.name}})---Added by-{{each.user.name}}<em class="pull-right">{{each.time_modified}}</em></ul>
-            </li>
-                </a>
-            {% endfor %}
+<div class="col-sm-8">
+<!-- Shows "add new item only if user is logged in -->
+{%if 'username' in session %}
+<a href="{{ url_for('newCatalogItem') }}">
+<h2 style="font-family:'Snap ITC'; font-size: 1.5em; color: darkblue ">
+Add New Item ....
+</h2>
+</a>
+{% endif %}
+<!-- Recent items is hidden when user check for category items -->
+{% if not no_show %}
+<h2>Recent Items</h2>
+{% endif %}
+<!-- displays each item -->
+{% for each in items %}
+<a href="{{url_for('showItem',catalog_id=each.category_id, item_id=each.id)}}">
+<li >  <ul>
+{{each.name}} ({{each.category.name}})---Added by-{{each.user.name}}
+    <em class="pull-right">
+        {{each.time_modified}}
+    </em>
+</ul>
+</li>
+</a>
+{% endfor %}
 
-		</div>
-	</div>
+</div>
+</div>
 
 {% include "footer.html" %}
     {% endblock %}
