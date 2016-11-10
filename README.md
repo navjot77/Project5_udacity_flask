@@ -1,4 +1,6 @@
 # Project5_udacity_flask
+![image_readme](https://cloud.githubusercontent.com/assets/15641327/20195711/7d769c0c-a74c-11e6-9bdf-61b1e0d546c6.png)
+
 #Setup required VirtualBox and Vagrant
 
 ## VirtualBox
